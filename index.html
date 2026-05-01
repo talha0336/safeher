@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SafeHer — Women Safety Analytics</title>
+  <link rel="stylesheet" href="src/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-emblem">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="currentColor"/><circle cx="12" cy="9" r="2.5" fill="white"/></svg>
+      </div>
+      <span class="logo-text">Safe<em>Her</em></span>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name">Anonymous</div>
+        <div class="user-badge">
+          <span class="badge-dot"></span> Protected
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        </div>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-page="heatmap">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        </div>
+        <span>Heatmap</span>
+      </a>
+      <a href="#" class="nav-item" data-page="analytics">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        </div>
+        <span>Analytics</span>
+      </a>
+
+      <div class="nav-section-label">Actions</div>
+      <a href="#" class="nav-item" data-page="report">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 8v4M12 16h.01"/></svg>
+        </div>
+        <span>Report Incident</span>
+      </a>
+      <a href="#" class="nav-item" data-page="saferoute">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6l9-4 9 4M3 18l9 4 9-4"/></svg>
+        </div>
+        <span>Safe Routes</span>
+      </a>
+      <a href="#" class="nav-item" data-page="alerts">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </div>
+        <span>Alerts</span>
+        <span class="badge">3</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="confidence-note">
+        <div class="cn-icon">⚠</div>
+        <span>Grey zones = low data confidence</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main" id="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn">
+        <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-right">
+        <div class="time-filter">
+          <button class="tf active" data-time="now">Live</button>
+          <button class="tf" data-time="today">Today</button>
+          <button class="tf" data-time="week">Week</button>
+          <button class="tf" data-time="month">Month</button>
+        </div>
+        <button class="sos-btn" id="sosBtn">
+          <span class="sos-ring"></span>
+          SOS
+        </button>
+      </div>
+    </header>
+
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card card-crimson">
+          <div class="stat-bg-icon">🚨</div>
+          <div class="stat-label">Incidents today</div>
+          <div class="stat-value" id="stat-today">24</div>
+          <div class="stat-delta">↑ 6 from yesterday</div>
+        </div>
+        <div class="stat-card card-amber">
+          <div class="stat-bg-icon">🔥</div>
+          <div class="stat-label">Active hotspots</div>
+          <div class="stat-value" id="stat-hotspots">7</div>
+          <div class="stat-delta">2 new this hour</div>
+        </div>
+        <div class="stat-card card-violet">
+          <div class="stat-bg-icon">🌫</div>
+          <div class="stat-label">Uncertain zones</div>
+          <div class="stat-value">12</div>
+          <div class="stat-delta">Low report confidence</div>
+        </div>
+        <div class="stat-card card-emerald">
+          <div class="stat-bg-icon">✅</div>
+          <div class="stat-label">SOS resolved</div>
+          <div class="stat-value">3</div>
+          <div class="stat-delta">Avg response 4.2 min</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-header">
+            <span>Live incident map</span>
+            <span class="live-pill"><span class="live-dot"></span> Live</span>
+          </div>
+          <div id="mini-map" style="height:320px;border-radius:12px;overflow:hidden;"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">Recent incidents</div>
+          <div class="incident-list" id="incident-list"></div>
+        </div>
+      </div>
+
+      <div class="card full-width">
+        <div class="card-header">Hourly incident pattern (today)</div>
+        <div class="chart-wrap">
+          <canvas id="hourlyChart" height="80"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Heatmap -->
+    <div class="page" id="page-heatmap">
+      <div class="heatmap-toolbar">
+        <div class="filter-group">
+          <label>Incident type</label>
+          <select id="incidentFilter">
+            <option value="all">All types</option>
+            <option value="harassment">Harassment</option>
+            <option value="stalking">Stalking</option>
+            <option value="assault">Assault</option>
+            <option value="theft">Theft</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Time of day</label>
+          <select id="timeFilter">
+            <option value="all">All hours</option>
+            <option value="night">Night (9pm–5am)</option>
+            <option value="evening">Evening (5–9pm)</option>
+            <option value="day">Day (5am–5pm)</option>
+          </select>
+        </div>
+        <div class="legend">
+          <span class="leg red"></span>High risk
+          <span class="leg amber"></span>Moderate
+          <span class="leg grey-hatch"></span>Uncertain
+        </div>
+        <div class="disclaimer">⚠ Absence of reports ≠ Safe</div>
+      </div>
+      <div id="main-map" style="height:calc(100vh - 190px);border-radius:16px;overflow:hidden;"></div>
+    </div>
+
+    <!-- Report -->
+    <div class="page" id="page-report">
+      <div class="report-container">
+        <div class="report-header">
+          <div class="report-header-pill">🔒 100% Anonymous</div>
+          <h2>Report an Incident</h2>
+          <p>Your identity is never stored. Every report makes the city safer for everyone.</p>
+        </div>
+        <form class="report-form" id="reportForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Incident type</label>
+              <select name="type" required>
+                <option value="">Select type</option>
+                <option>Verbal harassment</option>
+                <option>Physical harassment</option>
+                <option>Stalking</option>
+                <option>Assault</option>
+                <option>Eve-teasing</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Severity</label>
+              <div class="severity-picker" id="severityPicker">
+                <button type="button" data-val="1" class="sev-btn">1</button>
+                <button type="button" data-val="2" class="sev-btn">2</button>
+                <button type="button" data-val="3" class="sev-btn">3</button>
+                <button type="button" data-val="4" class="sev-btn">4</button>
+                <button type="button" data-val="5" class="sev-btn active">5</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Location <button type="button" class="geo-btn" id="geoBtn">📍 Use my location</button></label>
+            <input type="text" name="location" id="locationInput" placeholder="e.g. MG Road, near Metro Gate 2" required/>
+          </div>
+          <div class="form-group">
+            <label>Date & Time</label>
+            <input type="datetime-local" name="datetime" id="datetimeInput" required/>
+          </div>
+          <div class="form-group">
+            <label>What happened <span class="optional">(optional)</span></label>
+            <textarea name="description" rows="4" placeholder="Any details help identify patterns. Share only what you're comfortable with."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Upload evidence <span class="optional">(optional, encrypted)</span></label>
+            <div class="upload-zone" id="uploadZone">
+              <div class="upload-icon">📎</div>
+              <span>Drop photo / audio / video here or click to upload</span>
+              <input type="file" accept="image/*,audio/*,video/*" hidden id="fileInput"/>
+            </div>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="anonCheck" checked/>
+            <label for="anonCheck">Submit anonymously (recommended)</label>
+          </div>
+          <button type="submit" class="submit-btn">Submit Report</button>
+        </form>
+        <div class="success-msg" id="successMsg">
+          ✓ Report submitted. Thank you for making your city safer.
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics -->
+    <div class="page" id="page-analytics">
+      <div class="analytics-grid">
+        <div class="card">
+          <div class="card-header">Incidents by type</div>
+          <canvas id="typeChart" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-header">Day-of-week pattern</div>
+          <canvas id="dowChart" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-header">Silence index — under-reporting risk</div>
+          <div class="silence-list" id="silenceList"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">Confidence score by zone</div>
+          <canvas id="confidenceChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Safe Routes -->
+    <div class="page" id="page-saferoute">
+      <div class="saferoute-container">
+        <div class="saferoute-panel">
+          <div class="saferoute-header">
+            <div class="saferoute-icon">🗺️</div>
+            <h2>Safe Route Finder</h2>
+            <p>Routes scored against live heatmap, lighting density & footfall.</p>
+          </div>
+          <div class="form-group">
+            <label>From</label>
+            <input type="text" id="fromInput" placeholder="Your current location"/>
+          </div>
+          <div class="form-group">
+            <label>To</label>
+            <input type="text" id="toInput" placeholder="Destination"/>
+          </div>
+          <button class="submit-btn" id="routeBtn">Find Safe Route →</button>
+          <div class="route-result" id="routeResult"></div>
+        </div>
+        <div id="route-map" style="flex:1;min-height:400px;border-radius:16px;overflow:hidden;"></div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="page" id="page-alerts">
+      <div class="alerts-container">
+        <div class="alerts-header">
+          <h2>Active Alerts & SOS</h2>
+          <span class="alerts-count">3 active</span>
+        </div>
+        <div id="alert-feed"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- SOS Modal -->
+  <div class="sos-modal" id="sosModal">
+    <div class="sos-modal-inner">
+      <div class="sos-rings">
+        <div class="sos-ring-1"></div>
+        <div class="sos-ring-2"></div>
+        <div class="sos-ring-3"></div>
+        <div class="sos-core">SOS</div>
+      </div>
+      <h2>SOS Activated</h2>
+      <p>Alerting your trusted contacts and nearest responders</p>
+      <div class="sos-status" id="sosStatus">Locating you…</div>
+      <button class="cancel-sos" id="cancelSos">Cancel Emergency</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="src/data.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
